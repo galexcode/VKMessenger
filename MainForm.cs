@@ -38,23 +38,25 @@ namespace IMV
 
         private DwmApi.MARGINS m_glassMargins;
 
-        delegate void getEvent();
-        delegate void getPhoto(List<uint> a, string size);
-        delegate void NotifyEvent(string name, string text, uint ID);
+        // Делегаты для...
+        delegate void getEvent(); // отлов общих событий 
+        delegate void getPhoto(List<uint> a, string size); // фото (в другом потоке, чтоб не подвисало)
+        delegate void NotifyEvent(string name, string text, uint ID); // всплывающее окошко (тоже в другом, чтоб не подвисало)
 
-        System.Threading.Timer timerKey, timerCount;
-        System.Windows.Forms.Timer wait;
+        System.Threading.Timer timerKey, timerCount; // таймеры для технических нужд
+        System.Windows.Forms.Timer wait; // таймер для скрытия оповещений 
         TimerCallback getKey, getCounters;
 
         public MainForm()
         {
+            // Инициализируем главное окно
             InitializeComponent();
             context = new ContextMenuStrip();
             context.Items.Add("Настройки");
             context.Items.Add("Выход");
             context.Items[0].Name = "Settings";
             context.Items[1].Name = "Exit";
-            context.ItemClicked += new ToolStripItemClickedEventHandler(context_ItemClicked);
+            context.ItemClicked += new ToolStripItemClickedEventHandler(context_ItemClicked); // Вешаем обработки события
             notifyIcon1.ContextMenuStrip = context;
             serv.NewStatus += new ChangeStatusEventHandler(serv_NewStatus);
             serv.NewMessage += new IncomingMessageEventHandler(serv_NewMessage);
@@ -76,7 +78,7 @@ namespace IMV
                         txt = info.text;
 
                     NotifyEvent ShowNotify = new NotifyEvent(ShowNotifyWindow);
-                    this.Invoke(ShowNotify, vars.VARS.Contact[info.outID].UserName, txt, info.outID); // инвочим для того, чтобы она всплывала
+                    this.Invoke(ShowNotify, vars.VARS.Contact[info.outID].UserName, txt, info.outID); // инвочим для того, чтобы окно оповещения всплывало
                 }
             }
         }
@@ -135,7 +137,7 @@ namespace IMV
                     {
                         try
                         {
-                            System.IO.FileStream stream = new System.IO.FileStream(vars.VARS.Directory + "frequency.dat", System.IO.FileMode.Create, System.IO.FileAccess.Write);
+                            System.IO.FileStream stream = new System.IO.FileStream(vars.VARS.Directory + "frequency.dat", System.IO.FileMode.Create, System.IO.FileAccess.Write); // Открываем файл с частотой исользования контактов
                             System.IO.StreamWriter writer = new System.IO.StreamWriter(stream, Encoding.UTF8);
                             foreach (uint id in vars.VARS.FrequencyUse.Keys)
                             {
@@ -195,6 +197,7 @@ namespace IMV
 
         private void ResetDwmBlurBehind()
         {
+            // Настраиваем прозрачность в windows 7
             if (DwmApi.DwmIsCompositionEnabled())
             {
                 DwmApi.DWM_BLURBEHIND blur_behind = new DwmApi.DWM_BLURBEHIND();
@@ -483,7 +486,7 @@ namespace IMV
 
         private void MainForm_Activated(object sender, EventArgs e)
         {
-            if (Environment.OSVersion.Version.Major >= 6.0)
+            if (Environment.OSVersion.Version.Major >= 6.0) // если версия ос выше, то прознарчное окно, иначе по-умолчанию
                 OnClientArea();
         }
 
